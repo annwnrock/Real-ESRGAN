@@ -49,7 +49,7 @@ class Predictor(BasePredictor):
             )
 
     def choose_model(self, scale, version, tile=0):
-        half = True if torch.cuda.is_available() else False
+        half = bool(torch.cuda.is_available())
         if version == 'General - RealESRGANplus':
             model = RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=64, num_block=23, num_grow_ch=32, scale=4)
             model_path = 'weights/RealESRGAN_x4plus.pth'
@@ -107,7 +107,7 @@ class Predictor(BasePredictor):
             else:
                 img_mode = None
 
-            h, w = img.shape[0:2]
+            h, w = img.shape[:2]
             if h < 300:
                 img = cv2.resize(img, (w * 2, h * 2), interpolation=cv2.INTER_LANCZOS4)
 
