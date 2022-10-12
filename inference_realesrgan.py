@@ -88,7 +88,7 @@ def main():
     if args.model_path is not None:
         model_path = args.model_path
     else:
-        model_path = os.path.join('weights', args.model_name + '.pth')
+        model_path = os.path.join('weights', f'{args.model_name}.pth')
         if not os.path.isfile(model_path):
             ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
             for url in file_url:
@@ -135,11 +135,7 @@ def main():
         print('Testing', idx, imgname)
 
         img = cv2.imread(path, cv2.IMREAD_UNCHANGED)
-        if len(img.shape) == 3 and img.shape[2] == 4:
-            img_mode = 'RGBA'
-        else:
-            img_mode = None
-
+        img_mode = 'RGBA' if len(img.shape) == 3 and img.shape[2] == 4 else None
         try:
             if args.face_enhance:
                 _, _, output = face_enhancer.enhance(img, has_aligned=False, only_center_face=False, paste_back=True)
@@ -149,10 +145,7 @@ def main():
             print('Error', error)
             print('If you encounter CUDA out of memory, try to set --tile with a smaller number.')
         else:
-            if args.ext == 'auto':
-                extension = extension[1:]
-            else:
-                extension = args.ext
+            extension = extension[1:] if args.ext == 'auto' else args.ext
             if img_mode == 'RGBA':  # RGBA images should be saved in png format
                 extension = 'png'
             if args.suffix == '':

@@ -24,13 +24,15 @@ except ImportError:
 
 
 def get_video_meta_info(video_path):
-    ret = {}
     probe = ffmpeg.probe(video_path)
     video_streams = [stream for stream in probe['streams'] if stream['codec_type'] == 'video']
     has_audio = any(stream['codec_type'] == 'audio' for stream in probe['streams'])
-    ret['width'] = video_streams[0]['width']
-    ret['height'] = video_streams[0]['height']
-    ret['fps'] = eval(video_streams[0]['avg_frame_rate'])
+    ret = {
+        'width': video_streams[0]['width'],
+        'height': video_streams[0]['height'],
+        'fps': eval(video_streams[0]['avg_frame_rate']),
+    }
+
     ret['audio'] = ffmpeg.input(video_path).audio if has_audio else None
     ret['nb_frames'] = int(video_streams[0]['nb_frames'])
     return ret
@@ -110,10 +112,13 @@ class Reader:
 
     def get_frame_from_stream(self):
         img_bytes = self.stream_reader.stdout.read(self.width * self.height * 3)  # 3 bytes for one pixel
-        if not img_bytes:
-            return None
-        img = np.frombuffer(img_bytes, np.uint8).reshape([self.height, self.width, 3])
-        return img
+        return (
+            np.frombuffer(img_bytes, np.uint8).reshape(
+                [self.height, self.width, 3]
+            )
+            if img_bytes
+            else None
+        )
 
     def get_frame_from_list(self):
         if self.idx >= self.nb_frames:
@@ -202,7 +207,7 @@ def inference_video(args, video_save_path, device=None, total_workers=1, worker_
         ]
 
     # ---------------------- determine model paths ---------------------- #
-    model_path = os.path.join('weights', args.model_name + '.pth')
+    model_path = os.path.join('weights', f'{args.model_name}.pth')
     if not os.path.isfile(model_path):
         ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
         for url in file_url:
@@ -374,10 +379,10 @@ def main():
     args.input = args.input.rstrip('/').rstrip('\\')
     os.makedirs(args.output, exist_ok=True)
 
-    if mimetypes.guess_type(args.input)[0] is not None and mimetypes.guess_type(args.input)[0].startswith('video'):
-        is_video = True
-    else:
-        is_video = False
+    is_video = bool(
+        mimetypes.guess_type(args.input)[0] is not None
+        and mimetypes.guess_type(args.input)[0].startswith('video')
+    )
 
     if is_video and args.input.endswith('.flv'):
         mp4_path = args.input.replace('.flv', '.mp4')

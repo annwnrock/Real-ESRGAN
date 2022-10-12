@@ -110,7 +110,7 @@ class RealESRGANDataset(data.Dataset):
 
         # crop or pad to 400
         # TODO: 400 is hard-coded. You may change it accordingly
-        h, w = img_gt.shape[0:2]
+        h, w = img_gt.shape[:2]
         crop_pad_size = 400
         # pad
         if h < crop_pad_size or w < crop_pad_size:
@@ -119,7 +119,7 @@ class RealESRGANDataset(data.Dataset):
             img_gt = cv2.copyMakeBorder(img_gt, 0, pad_h, 0, pad_w, cv2.BORDER_REFLECT_101)
         # crop
         if img_gt.shape[0] > crop_pad_size or img_gt.shape[1] > crop_pad_size:
-            h, w = img_gt.shape[0:2]
+            h, w = img_gt.shape[:2]
             # randomly choose top and left coordinates
             top = random.randint(0, h - crop_pad_size)
             left = random.randint(0, w - crop_pad_size)
@@ -185,8 +185,13 @@ class RealESRGANDataset(data.Dataset):
         kernel = torch.FloatTensor(kernel)
         kernel2 = torch.FloatTensor(kernel2)
 
-        return_d = {'gt': img_gt, 'kernel1': kernel, 'kernel2': kernel2, 'sinc_kernel': sinc_kernel, 'gt_path': gt_path}
-        return return_d
+        return {
+            'gt': img_gt,
+            'kernel1': kernel,
+            'kernel2': kernel2,
+            'sinc_kernel': sinc_kernel,
+            'gt_path': gt_path,
+        }
 
     def __len__(self):
         return len(self.paths)

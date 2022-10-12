@@ -59,7 +59,7 @@ class SRVGGNetCompact(nn.Module):
 
     def forward(self, x):
         out = x
-        for i in range(0, len(self.body)):
+        for i in range(len(self.body)):
             out = self.body[i](out)
 
         out = self.upsampler(out)

@@ -7,10 +7,7 @@ from basicsr.archs.rrdbnet_arch import RRDBNet
 def main(args):
     # An instance of the model
     model = RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=64, num_block=23, num_grow_ch=32, scale=4)
-    if args.params:
-        keyname = 'params'
-    else:
-        keyname = 'params_ema'
+    keyname = 'params' if args.params else 'params_ema'
     model.load_state_dict(torch.load(args.input)[keyname])
     # set the train mode to false since we will only run the forward pass.
     model.train(False)
